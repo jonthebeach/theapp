@@ -13,6 +13,8 @@ import {
   TouchableHighlight,
   BackAndroid
 } from 'react-native';
+import { Icon, Button } from 'native-base';
+
 import Routes from './routes';
 
 export default class Login extends Component {
@@ -35,6 +37,14 @@ export default class Login extends Component {
 
   _openSettings(){
     this.props.navigator.replace({id:Routes.settings.id});
+  }
+
+  _openAbout(){
+    this.props.navigator.replace({id:Routes.about.id});
+  }
+
+  _openMap(){
+    this.props.navigator.replace({id:Routes.about.id});
   }
 
   _publishHappy(){
@@ -64,23 +74,45 @@ export default class Login extends Component {
   render() {
     return (
       <View style={styles.root}>
-      <View style={styles.container}>
-        <TouchableHighlight
+      <View style={styles.header}>
+        <Button
+          transparent
+          style={styles.logo}
+          onPress={this._openAbout.bind(this)}>
+          <Icon name='ios-camera' style={{color:'rgba(255, 255, 255, 0.4)'}}/>
+        </Button>
+        <Button
+          transparent
           style={styles.settings}
-          activeOpacity={0.4}
-          underlayColor='transparent'
           onPress={this._openSettings.bind(this)}>
-          <Image source={ require('../img/settings.png')} style={styles.settingsImage}/>
-        </TouchableHighlight>
-        <Image source={require('../img/logo.png')} style={styles.logoImage}/>
+          <Icon name='ios-settings' style={{color:'rgba(255, 255, 255, 0.4)'}}/>
+        </Button>
+        {/*
+          <TouchableHighlight
+            style={styles.logo}
+            activeOpacity={0.4}
+            underlayColor='transparent'
+            onPress={this._openAbout.bind(this)}>
+            <Image source={ require('../img/logo.png')} style={styles.logoImage}/>
+          </TouchableHighlight>
+          <TouchableHighlight
+            style={styles.settings}
+            activeOpacity={0.4}
+            underlayColor='transparent'
+            onPress={this._openSettings.bind(this)}>
+            <Image source={ require('../img/settings.png')} style={styles.settingsImage}/>
+          </TouchableHighlight>
+          */}
+      </View>
+      <View style={styles.container}>
         <Text style={styles.welcome}>
           <Text style={styles.title}> Enjoying the event ?</Text>
         </Text>
-        <Text style={styles.instructions}>
-          <Text>Shake your phone, active camera and smile up or touch the happy icon face below.</Text>
-        </Text>
+        <View style={styles.textWrap}>
+          <Text style={styles.instructions}>/* Active camera and smile or touch the happy faced icon below */</Text>
+        </View>
         <TouchableHighlight
-          activeOpacity={0.6}
+          activeOpacity={0.8}
           underlayColor='transparent'
           onHideUnderlay={this._onHideUnderlayHappy.bind(this)}
           onShowUnderlay={this._onShowUnderlayHappy.bind(this)}
@@ -90,17 +122,36 @@ export default class Login extends Component {
         <Text style={styles.welcome}>
           <Text style={styles.title}> Feeling unhappy ?</Text>
         </Text>
-        <Text style={styles.instructions}>
-          <Text>Make a sad face on your camera or touch the sad icon face below.</Text>
-        </Text>
+        <View style={styles.textWrap}>
+          <Text style={styles.instructions}>/* Make a sad face on your camera or touch the faced sad icon below */</Text>
+        </View>
         <TouchableHighlight
-          activeOpacity={0.6}
+          activeOpacity={0.8}
           underlayColor='transparent'
           onHideUnderlay={this._onHideUnderlaySad.bind(this)}
           onShowUnderlay={this._onShowUnderlaySad.bind(this)}
           onPress={this._publishSad.bind(this)}>
           <Image source={ this.state.pressSadStatus ? require('../img/sad_face_on.png') : require('../img/sad_face.png')} style={styles.buttonImage}/>
         </TouchableHighlight>
+        <View style={styles.textWrap}>
+        <TouchableHighlight
+          activeOpacity={0.7}
+          underlayColor='transparent'
+          onPress={this._openMap.bind(this)}>
+          <Text style={styles.map}>Try our live map to visualize it realtime !</Text>
+          </TouchableHighlight>
+        </View>
+        {/*<TouchableHighlight
+          style={styles.about}
+          activeOpacity={0.4}
+          underlayColor='transparent'
+          onPress={this._openAbout.bind(this)}>
+          <View>
+          <Image source={ require('../img/logo.png')} style={styles.logoImage}/>
+          <Text>About</Text>
+          </View>
+        </TouchableHighlight>
+        */}
       </View>
       </View>
     );
@@ -110,10 +161,20 @@ export default class Login extends Component {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    flexDirection: 'column',
     backgroundColor: 'rgba(36, 37, 38, 1)'
+  },
+  header: {
+    flex: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(36, 37, 38, 1)',
+    marginTop: 5,
+    marginBottom: 5
   },
   container: {
     flex: 0,
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(36, 37, 38, 1)',
@@ -132,13 +193,19 @@ const styles = StyleSheet.create({
   instructions: {
     textAlign: 'center',
     marginBottom: 5,
-    color: 'rgba(255, 255, 255, .4)'
+    color: 'rgba(255, 255, 255, .2)',
+  },
+  textWrap: {
+    paddingRight: 35,
+    paddingLeft: 35
   },
   logoImage: {
-    width: 100,
-    height: 100,
-    marginTop: -20,
-    marginBottom: 25
+    width: 20,
+    height: 20
+  },
+  logo: {
+    alignSelf: 'flex-start',
+    marginLeft: 25
   },
   buttonImage: {
     width: 70,
@@ -147,14 +214,23 @@ const styles = StyleSheet.create({
     marginTop: 15
   },
   settingsImage: {
-    width: 22,
-    height: 22
-  },
-  settingsContainer: {
+    width: 25,
+    height: 25
   },
   settings: {
     alignSelf: 'flex-end',
-    marginRight: 15,
-    marginTop: 10
+    marginRight: 25
+  },
+  map: {
+    marginTop: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    textAlign: 'center',
+    color: 'rgba(255, 255, 255, .4)',
+    padding: 20,
+    borderRadius: 10
+  },
+  about: {
+    marginTop: 15,
+    opacity: 0.5
   }
 });
