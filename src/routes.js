@@ -5,17 +5,23 @@
  */
 
 import HomeView from './login';
-import TalksView from './talks';
+import SettingsView from './configure';
+// import TalksView from './talks';
 
 export default {
   home: {
     id: 'home',
     title: 'Home',
     component: HomeView
-  },
-  talks: {
-    id: 'talks',
-    title: 'Talks',
-    component: TalksView
   }
+  ,settings: {
+    id: 'settings',
+    title: 'Settings',
+    component: SettingsView
+  }
+  // ,talks: {
+  //   id: 'talks',
+  //   title: 'Talks',
+  //   component: TalksView
+  // }
 }
