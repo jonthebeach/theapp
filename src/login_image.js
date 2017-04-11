@@ -14,9 +14,15 @@ import {
   TouchableHighlight,
   BackAndroid
 } from 'react-native';
-import { Icon, Button } from 'native-base';
+import {Container, Header, Title, Content, Icon, Button} from 'native-base';
 
+import {goBack} from './utils';
 import Routes from './routes';
+
+import smileFaceImgOn from '../img/smile_face_on.png';
+import smileFaceImgOff from '../img/smile_face.png';
+import sadFaceImgOn from '../img/sad_face_on.png';
+import sadFaceImgOff from '../img/sad_face.png';
 
 export default class Login extends Component {
 
@@ -26,14 +32,7 @@ export default class Login extends Component {
   }
 
   componentDidMount(){
-      BackAndroid.addEventListener('hardwareBackPress', () => {
-        const routes = this.props.navigator.getCurrentRoutes();
-        if(routes.length && routes[0].id === Routes.settings.id ){
-          this.props.navigator.replace({id:Routes.home.id});
-          return true;
-        }
-        return false;
-      });
+      BackAndroid.addEventListener('hardwareBackPress', () => goBack(this.props.navigator));
   }
 
   _openSettings(){
@@ -74,36 +73,23 @@ export default class Login extends Component {
 
   render() {
     return (
+      <Container style={styles.root}>
+          <Header style={styles.header}>
+          <Button
+            transparent
+            onPress={this._openAbout.bind(this)}>
+            <Icon name='ios-camera' style={{color:'rgba(255, 255, 255, 0.4)'}}/>
+          </Button>
+            <Title style={styles.headerTitle}>/* J on the beach */</Title>
+            <Button
+              transparent
+              onPress={this._openSettings.bind(this)}>
+              <Icon name='ios-settings' style={{fontSize: 27, marginBottom: 5, color:'rgba(255, 255, 255, 0.4)'}}/>
+            </Button>
+          </Header>
+          <Content>
       <ScrollView  style={styles.root}>
       <View style={styles.header}>
-        <Button
-          transparent
-          style={styles.logo}
-          onPress={this._openAbout.bind(this)}>
-          <Icon name='ios-camera' style={{color:'rgba(255, 255, 255, 0.4)'}}/>
-        </Button>
-        <Button
-          transparent
-          style={styles.settings}
-          onPress={this._openSettings.bind(this)}>
-          <Icon name='ios-settings' style={{color:'rgba(255, 255, 255, 0.4)'}}/>
-        </Button>
-        {/*
-          <TouchableHighlight
-            style={styles.logo}
-            activeOpacity={0.4}
-            underlayColor='transparent'
-            onPress={this._openAbout.bind(this)}>
-            <Image source={ require('../img/logo.png')} style={styles.logoImage}/>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={styles.settings}
-            activeOpacity={0.4}
-            underlayColor='transparent'
-            onPress={this._openSettings.bind(this)}>
-            <Image source={ require('../img/settings.png')} style={styles.settingsImage}/>
-          </TouchableHighlight>
-          */}
       </View>
       <View style={styles.container}>
         <Text style={styles.welcome}>
@@ -112,12 +98,14 @@ export default class Login extends Component {
         <View style={styles.textWrap}>
           <Text style={styles.instructions}>/* Active camera and smile or touch the happy faced icon below */</Text>
         </View>
-        <Button
-          transparent
-          style={{backgroundColor: 'red', alignSelf: 'center'}}
+        <TouchableHighlight
+          activeOpacity={0.8}
+          underlayColor='transparent'
+          onHideUnderlay={this._onHideUnderlayHappy.bind(this)}
+          onShowUnderlay={this._onShowUnderlayHappy.bind(this)}
           onPress={this._publishHappy.bind(this)}>
-          <Icon name='ios-happy-outline' style={{backgroundColor: 'green', height: 80, marginTop:-100, padding:0, fontSize: 100, color:'rgba(255, 255, 255, 0.4)'}}/>
-        </Button>
+          <Image source={ this.state.pressHappyStatus ? smileFaceImgOn : smileFaceImgOff} style={styles.buttonImage}/>
+        </TouchableHighlight>
         <Text style={styles.welcome}>
           <Text style={styles.title}> Feeling unhappy ?</Text>
         </Text>
@@ -130,29 +118,20 @@ export default class Login extends Component {
           onHideUnderlay={this._onHideUnderlaySad.bind(this)}
           onShowUnderlay={this._onShowUnderlaySad.bind(this)}
           onPress={this._publishSad.bind(this)}>
-          <Image source={ this.state.pressSadStatus ? require('../img/sad_face_on.png') : require('../img/sad_face.png')} style={styles.buttonImage}/>
+          <Image source={ this.state.pressSadStatus ? sadFaceImgOn : sadFaceImgOff} style={styles.buttonImage}/>
         </TouchableHighlight>
         <View style={styles.textWrap}>
         <TouchableHighlight
           activeOpacity={0.7}
           underlayColor='transparent'
           onPress={this._openMap.bind(this)}>
-          <Text style={styles.map}>Try our live map to visualize it realtime !</Text>
+          <Text style={styles.map}>Try our live map & visualize it realtime !</Text>
           </TouchableHighlight>
         </View>
-        {/*<TouchableHighlight
-          style={styles.about}
-          activeOpacity={0.4}
-          underlayColor='transparent'
-          onPress={this._openAbout.bind(this)}>
-          <View>
-          <Image source={ require('../img/logo.png')} style={styles.logoImage}/>
-          <Text>About</Text>
-          </View>
-        </TouchableHighlight>
-        */}
       </View>
       </ScrollView>
+      </Content>
+  </Container>
     );
   }
 }
@@ -202,10 +181,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20
   },
-  logo: {
-    alignSelf: 'flex-start',
-    marginLeft: 25
-  },
   buttonImage: {
     width: 70,
     height: 70,
@@ -215,10 +190,6 @@ const styles = StyleSheet.create({
   settingsImage: {
     width: 25,
     height: 25
-  },
-  settings: {
-    alignSelf: 'flex-end',
-    marginRight: 25
   },
   map: {
     marginTop: 20,
@@ -232,5 +203,13 @@ const styles = StyleSheet.create({
   about: {
     marginTop: 15,
     opacity: 0.5
+  },
+  header: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 10
+  },
+  headerTitle:{
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.5)'
   }
 });

@@ -4,8 +4,8 @@
  * @flow
  */
 
-import HomeView from './login';
-import SettingsView from './configure';
+import HomeView from './login_image';
+import SettingsView from './configure_form';
 // import TalksView from './talks';
 
 export default {
