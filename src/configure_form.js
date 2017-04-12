@@ -8,7 +8,18 @@ import React, { Component } from 'react';
 import {View, DatePickerAndroid} from 'react-native';
 import { Container, Header, Title, Content, List, ListItem, InputGroup, Input, Icon as IconBase, Text, Picker, Button, Footer} from 'native-base';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {goBack, convertDate} from './utils';
+import {
+  goBack,
+  convertDate,
+  toDateType,
+  fromValoDate,
+  toValoDate,
+  getContributorInstance,
+  saveContributorInstance,
+  getContributorID,
+  getValoHost,
+  getValoTenant
+} from './utils';
 import Routes from './routes';
 
 const Item = Picker.Item;
@@ -27,6 +38,24 @@ export default class Configure extends Component {
             date: new Date()
         };
     }
+
+    async componentDidMount(){
+      const id = await getContributorID();
+      const host = await getValoHost();
+      const tenant = await getValoTenant();
+      const contributor = await getContributorInstance(id, host, tenant);
+      if(!contributor) return;
+      this.setState({
+        selectedGender: contributor.data.gender ? contributor.data.gender : '',
+        selectedCountry: contributor.data.country ? contributor.data.country : '',
+        selectedCompany: contributor.data.company ? contributor.data.company : '',
+        selectedRole: contributor.data.role ? contributor.data.role : '',
+        selectedDiet: contributor.data.diet ? contributor.data.diet : '',
+        birthday: contributor.data.birthday ? fromValoDate(contributor.data.birthday) : '',
+        date:  contributor.data.birthday ? toDateType(fromValoDate(contributor.data.birthday)) : new Date()
+      })
+    }
+
     onValueChange(value) {
       this.setState(value);
     }
@@ -50,6 +79,38 @@ export default class Configure extends Component {
       return goBack(this.props.navigator);
     }
 
+    _getContributorDocument(id){
+      const contributorDoc = {
+        "contributor": id
+      };
+      if(this.state.selectedGender)
+        contributorDoc.gender = this.state.selectedGender;
+      if(this.state.birthday)
+        contributorDoc.birthday = toValoDate(this.state.birthday);
+      if(this.state.selectedCountry)
+        contributorDoc.country = this.state.selectedCountry;
+      if(this.state.selectedCompany)
+        contributorDoc.company = this.state.selectedCompany;
+      if(this.state.selectedRole)
+        contributorDoc.role = this.state.selectedRole;
+      if(this.state.selectedDiet)
+        contributorDoc.diet = this.state.selectedDiet;
+      return contributorDoc;
+    }
+
+    async _save(){
+      const id = await getContributorID();
+      const host = await getValoHost();
+      const tenant = await getValoTenant();
+      const contributor = await getContributorInstance(id, host, tenant);
+      if(!contributor){
+        return;// this.moveToValoView();
+      }
+      const doc = this._getContributorDocument(id);
+      console.log('saving', contributor, doc)
+      await saveContributorInstance(id, doc, contributor.version, host, tenant);
+    }
+
     render() {
         return (
             <Container style={styles.root}>
@@ -58,7 +119,7 @@ export default class Configure extends Component {
                       <IconBase name='ios-arrow-dropleft' />
                   </Button>
                   <Title style={styles.headerTitle}>Configure Settings</Title>
-                  <Button transparent>
+                  <Button transparent onPress={this._save.bind(this)}>
                       <IconBase name='ios-checkmark-circle-outline' />
                   </Button>
                 </Header>
@@ -90,9 +151,11 @@ export default class Configure extends Component {
                                 size={22}
                                 color="#a7da1c" />
                               <Text style={styles.text}>Age</Text>
-                              <Text
-                                onPress={this._showPicker.bind(this, {date: this.state.date})}
-                                style={{color:"#a7da1c", marginLeft: 83, fontFamily: 'sans-serif-light'}}>{this.state.birthday || "Select Birthday ..."}</Text>
+                            </View>
+                            <View>
+                            <Text
+                              onPress={this._showPicker.bind(this, {date: this.state.date})}
+                              style={{color:"#a7da1c", marginRight: this.state.birthday ? 80 : 48, fontFamily: 'sans-serif-light'}}>{this.state.birthday || "Select Birthday ..."}</Text>
                             </View>
                           </View>
                         </ListItem>

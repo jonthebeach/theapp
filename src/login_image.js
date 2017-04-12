@@ -15,8 +15,8 @@ import {
   BackAndroid
 } from 'react-native';
 import {Container, Header, Title, Content, Icon, Button} from 'native-base';
-
-import {goBack} from './utils';
+import {isNumber} from 'lodash';
+import {goBack, getValoHost, getValoTenant, getContributorID, createValoAssets, postToStream} from './utils';
 import Routes from './routes';
 
 import smileFaceImgOn from '../img/smile_face_on.png';
@@ -31,8 +31,16 @@ export default class Login extends Component {
     this.state = { pressHappyStatus: false, pressSadStatus: false };
   }
 
-  componentDidMount(){
-      BackAndroid.addEventListener('hardwareBackPress', () => goBack(this.props.navigator));
+  async componentDidMount(){
+      const _goBack = () => goBack(this.props.navigator);
+      BackAndroid.removeEventListener('hardwareBackPress', _goBack);
+      BackAndroid.addEventListener('hardwareBackPress', _goBack);
+      const host = await getValoHost();
+      console.debug(host);
+      const tenant = await getValoTenant();
+      console.debug(tenant);
+      await createValoAssets(host, tenant);
+      console.log('created all');
   }
 
   _openSettings(){
@@ -47,12 +55,44 @@ export default class Login extends Component {
     this.props.navigator.replace({id:Routes.about.id});
   }
 
-  _publishHappy(){
-    console.log('happy')
+  _getPosition(){
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            speed: position && position.coords && isNumber(position.coords.speed) ? position.coords.speed : 0,
+            heading: position && position.coords && isNumber(position.coords.heading) ? position.coords.heading : 0,
+            accuracy: position && position.coords && isNumber(position.coords.accuracy) ? position.coords.accuracy : 0,
+            longitude: position && position.coords && isNumber(position.coords.longitude) ? position.coords.longitude : 0,
+            latitude: position && position.coords && isNumber(position.coords.latitude) ? position.coords.latitude : 0,
+            altitude: position && position.coords && isNumber(position.coords.altitude) ? position.coords.altitude : 0
+          })
+        },
+        (error) => reject(error),
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+      );
+    });
   }
 
-  _publishSad(){
-    console.log('sad')
+  async _publishHappy(){
+    console.log('happy');
+    const id = await getContributorID();
+    const host = await getValoHost();
+    const tenant = await getValoTenant();
+    const position = await this._getPosition();
+    const data = {contributor:id, position, status: "happy", timestamp: new Date().toISOString()};
+    console.log(data);
+    await postToStream(data, host, tenant);
+  }
+
+  async _publishSad(){
+    console.log('sad');
+    const id = await getContributorID();
+    const host = await getValoHost();
+    const tenant = await getValoTenant();
+    const position = await this._getPosition();
+    const data = {contributor:id, position, status: "sad", timestamp: new Date().toISOString()};
+    await postToStream(data, host, tenant);
   }
 
   _onHideUnderlayHappy(){
